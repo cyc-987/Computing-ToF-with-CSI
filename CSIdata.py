@@ -17,10 +17,17 @@ class CSIdata():
         从CSI数据中提取有用的子载波数据
         '''
         sec1 = self.data[:, 6:127]
-        sec2 = self.data[:, 130:250]
+        sec2 = self.data[:, 130:251]
         self.sec1 = sec1
         self.sec2 = sec2
         return sec1, sec2
+    
+    def getUnwarppedPhase(self):
+        sec1, sec2 = self.pickUsefulData()
+        data = np.concatenate((sec1, sec2), axis=1)
+        data = np.angle(data)
+        data = np.unwrap(data)
+        return data
     
     def div(self):
         '''
@@ -136,7 +143,7 @@ class CSIdata():
             sciMat = np.array(meta['CSI_LTF1'])
             self.num_dim = sciMat.shape[0]
             self.num_waves = sciMat.shape[1]
-            print(sciMat.shape)
+            # print(sciMat.shape)
         else:
             raise ValueError(f"failed to load data from {filepath}")
         return sciMat
