@@ -49,27 +49,45 @@ class CSIdata():
         result *= 3e8
         return result
     
+    def computeToF(self, omega, f):
+        '''
+        计算距离向量，omega为一维omega向量
+        '''
+        result = np.zeros(omega.shape)
+        result = np.angle(omega) / (-2 * np.pi * f)
+        return result
+    
     def convertToSmoothCSI(self, N):
         '''
         将CSI数据转换为smooth矩阵
         '''
         sec1, sec2 = self.pickUsefulData()
         self.N = N
-        # 取第一天线数据
-        sec1 = sec1[0,:]
-        sec2 = sec2[0,:]
         
-        # 生成smooth矩阵
-        smooth1 = np.zeros((N, sec1.shape[0]-N+1), dtype=complex)
-        smooth2 = np.zeros((N, sec2.shape[0]-N+1), dtype=complex)
+        # 初始化smooth矩阵
+        num_antennas = sec1.shape[0]  # 假设每一行代表一个天线
+        smooth1 = []
+        smooth2 = []
         
-        # 填充smooth矩阵
-        for i in range(sec1.shape[0]-N+1):
-            smooth1[:, i] = sec1[i:i+N]
-        for i in range(sec2.shape[0]-N+1):
-            smooth2[:, i] = sec2[i:i+N]
+        for i in range(num_antennas):
+            sec1_i = sec1[i, :]
+            sec2_i = sec2[i, :]
+            
+            # 生成smooth矩阵
+            smooth1_i = np.zeros((N, sec1_i.shape[0] - N + 1), dtype=complex)
+            smooth2_i = np.zeros((N, sec2_i.shape[0] - N + 1), dtype=complex)
+            
+            # 填充smooth矩阵
+            for j in range(sec1_i.shape[0] - N + 1):
+                smooth1_i[:, j] = sec1_i[j:j + N]
+            for j in range(sec2_i.shape[0] - N + 1):
+                smooth2_i[:, j] = sec2_i[j:j + N]
+            
+            smooth1.append(smooth1_i)
+            smooth2.append(smooth2_i)
         
-        return smooth1, smooth2
+        return np.array(smooth1), np.array(smooth2)
+
     
     def buildAlpha(self, N, f):
         '''
@@ -104,7 +122,7 @@ class CSIdata():
         eigval_real = np.abs(eigval)
         kmeans = KMeans(n_clusters=2, random_state=0).fit(eigval_real)
         labels = kmeans.labels_
-        print('E labels:', labels)
+        # print('E labels:', labels)
         
         # 根据聚类结果提取特征向量
         large_eigvec = eigvec[:, labels == labels.max()]
