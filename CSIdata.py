@@ -87,6 +87,22 @@ class CSIdata():
             smooth2.append(smooth2_i)
         
         return np.array(smooth1), np.array(smooth2)
+    
+    def convertToSmoothCSI_advanced(self, N):
+        sec1, sec2 = self.pickUsefulData()
+        self.N = N
+        dim = self.num_dim
+        N_perline = int(N/4)
+        
+        smooth = np.zeros((N, int((sec1.shape[1]-N_perline+1)*(dim/2+1))), dtype=complex)
+        
+        x_shape = N_perline
+        y_shape = int(dim/2)
+        for i in range(y_shape+1):
+            for j in range(sec1.shape[1]-N_perline+1):
+                smooth[:, (i+1)*(j+1)-1] = sec1[i:i+y_shape,j:j+x_shape].reshape(-1)
+        
+        return smooth
 
     
     def buildAlpha(self, N, f):
@@ -101,6 +117,30 @@ class CSIdata():
             for i in range(N):
                 array[i] = np.exp(-2j * np.pi * i * f * tao)
             return array
+        return alpha
+    
+    def buildAlpha_advanced(self, N, f, d):
+        '''
+        生成alpha函数，构建导矢向量
+        与上一个不同，这个同时考虑了aoa和tof
+        f是频率，d是天线间距占波长比例（例如1/2波长， d=1/2）
+        dim是天线索引
+        '''
+        def alpha(theta, tao):
+            '''
+            接收一个theta和tao值，返回一个N的数组
+            '''
+            y = int(self.num_dim/2)
+            x = int(N/y)
+            array = np.zeros((y, x), dtype=complex)
+            
+            for dim in range(y):
+                phi = d * np.sin(theta) * dim
+                for i in range(x):
+                    array[dim, i] = np.exp(-2j * np.pi * (i * f * tao + phi))
+            
+            array = array.reshape(-1)
+            return array.T
         return alpha
     
     def computE(self, smooth):
@@ -143,6 +183,22 @@ class CSIdata():
             接收一个tao值，返回一个PMUSIC值
             '''
             a = self.buildAlpha(N, f)(tao)
+            a_H = np.conj(a.T)
+            P = np.dot(np.dot(np.dot(a_H, En), np.conj(En.T)), a)
+            return 1 / np.abs(P)
+        return PMUSIC
+
+    def buildPMUSIC_advanced(self, f, d):
+        '''
+        生成PMUSIC函数，与上一个不同，这个同时考虑了aoa和tof
+        '''
+        N = self.N
+        En = self.En
+        def PMUSIC(theta, tao):
+            '''
+            接收theta和tao值，返回一个PMUSIC值
+            '''
+            a = self.buildAlpha_advanced(N, f, d)(theta, tao)
             a_H = np.conj(a.T)
             P = np.dot(np.dot(np.dot(a_H, En), np.conj(En.T)), a)
             return 1 / np.abs(P)

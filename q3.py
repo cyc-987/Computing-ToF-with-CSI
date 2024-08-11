@@ -10,8 +10,8 @@ csiB = CSIdata.CSIdata(filepathB)
 csiC = CSIdata.CSIdata(filepathC)
 
 f = 61.44/256.0 # 单位是MHz
-processB = AccurateCSI.accurateCSI(csiB)
-phaseB_average =  processB.processData()
+processB = AccurateCSI.accurateCSI(csiB) # 初始化
+phaseB_average =  processB.processData() # 处理数据，得到平均相位
 parasB, PB = processB.estimate(f)
 
 processC = AccurateCSI.accurateCSI(csiC)
@@ -28,6 +28,7 @@ y = np.zeros(x.shape[0])
 for i in range(x.shape[0]):
     y[i] = PB(x[i])
 pic = visual.pic('B: actual vs estimated')
+pic.set_labels(xlabel='Subcarrier Index', ylabel='Phase')
 pic.drawData(data=phaseB_average)
 pic.drawData(data=y)
 pic.end()

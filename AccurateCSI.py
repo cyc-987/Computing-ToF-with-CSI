@@ -52,8 +52,7 @@ class accurateCSI():
         x = np.linspace(0, self.phase_average.shape[0]-1, self.phase_average.shape[0])
         y = self.phase_average
         initial_guess = [80, 0.512, -0.02, -0.006, -0.02762, -0.5, 122, -0.3]
-        paras, ier = leastsq(self.buildErrorFunc(self.buildPhaseModel(f)), initial_guess, args=(x, y))
-        # xia, xi, epsilon, tof, beta, xb = paras
+        paras, ier = leastsq(self.buildErrorFunc(self.buildPhaseModel(f)), initial_guess, args=(x, y), maxfev=30000)
         P = lambda x: self.buildPhaseModel(f)(paras, x)
         
         return paras, P
