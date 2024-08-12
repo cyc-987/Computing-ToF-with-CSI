@@ -50,7 +50,7 @@ N = 60  # 重叠子载波数
 f = 312500  # 频率间隔
 end_distance = 30  # 寻找最大值的终止距离，单位为米
 
-distancesB = [findDistance(csiB, N, f, end_distance, False) for _ in range(csiB.num_dim)]
+distancesB = [findDistance(csiB, N, f, end_distance, True) for _ in range(csiB.num_dim)]
 distancesC = [findDistance(csiC, N, f, end_distance, False) for _ in range(csiC.num_dim)]
 
 distB = np.mean(distancesB)
