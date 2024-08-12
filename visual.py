@@ -8,7 +8,7 @@ config = {
             "mathtext.fontset": 'stix',
             'axes.unicode_minus': False
         }
-# rcParams.update(config)
+rcParams.update(config)
 
 class pic():
     def __init__(self, title,figsize=(8, 6)):
@@ -34,12 +34,29 @@ class pic():
         if ylabel:
             self.ax.set_ylabel(ylabel)
     
-    def drawData(self, datax=-1, data=any):
+    def drawData(self, datax=-1, data=None, color='tab:blue', linewidth=2, linestyle='-', marker=None, markersize=6, label=None):
+        """
+        绘制数据，并指定线条颜色、宽度、线型、标记点、标记点大小和图例标签。
+
+        参数：
+        - datax: X轴数据（可选），如果为 -1 则自动生成。
+        - data: Y轴数据，必须提供。
+        - color: 线条颜色，默认为 'tab:blue'。
+        - linewidth: 线条宽度，默认为 2。
+        - linestyle: 线条样式，默认为实线 ('-')。可以是 '--' (虚线)、':' (点线) 等。
+        - marker: 标记点样式，默认为 None。可以设置为 'o', 'x', '^' 等。
+        - markersize: 标记点大小，默认为 6。
+        - label: 图例标签，默认为 None。用于显示图例。
+        """
+        if data is None:
+            raise ValueError("参数 'data' 不能为 None")
+        
         if np.all(datax == -1):
-            datax = np.linspace(0, data.shape[0]-1, data.shape[0])
-        self.ax.plot(datax, data)
+            datax = np.linspace(0, data.shape[0] - 1, data.shape[0])
+        
+        self.ax.plot(datax, data, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker, markersize=markersize, label=label)
         self.update()
-    
+
     def drawScatter(self, point, label=None):
         self.ax.scatter(point[0], point[1], label=label)
         
